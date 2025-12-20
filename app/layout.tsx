@@ -36,7 +36,7 @@ export default function RootLayout({
             <Sidebar />
 
             {/* Main content: stays to the right of the sidebar on large screens, has top padding for mobile header */}
-            <main className="flex-1 min-h-screen bg-gray-100 dark:bg-gray-900 pt-16 lg:pt-0">
+            <main className="flex-1 min-h-screen flex flex-col bg-gray-200 dark:bg-gray-900 pt-16 lg:pt-0">
               {children}
             </main>
           </div>

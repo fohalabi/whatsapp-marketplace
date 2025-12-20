@@ -5,25 +5,17 @@ import { usePathname } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
 import { sidebarData } from './sidebar-data';
 import { SidebarSection } from './sidebarSection';
-import { DarkModeToggle } from '@/components/darkmodetoggle';
+// import { DarkModeToggle } from '@/components/darkmodetoggle'; // commented out per UX change (toggle removed)
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // keep which section is open (accordion behavior: only one open at a time)
-  const [openSection, setOpenSection] = useState<string | null>(sidebarData[0]?.section ?? null);
-
-//   const [activePage, setActivePage] = useState('dashboard');
 
   // Extract active page from pathname
   const activePage = pathname.split('/')[1] || 'dashboard';
 
   const handleItemClick = () => {
     setMobileMenuOpen(false);
-  };
-
-  const handleToggleSection = (sectionName: string) => {
-    setOpenSection((prev) => (prev === sectionName ? null : sectionName));
   };
 
   return (
@@ -41,7 +33,7 @@ export const Sidebar: React.FC = () => {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+          w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
           flex flex-col transition-transform duration-300 ease-in-out
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
@@ -49,7 +41,7 @@ export const Sidebar: React.FC = () => {
         aria-label="Main navigation"
       >
         {/* Logo Area */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
               MarketHub
@@ -68,7 +60,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Search + Dark Mode */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -82,21 +74,19 @@ export const Sidebar: React.FC = () => {
               />
             </div>
 
-            {/* ✅ Reused global dark mode toggle */}
-            <DarkModeToggle />
+            {/* ✅ Dark mode toggle commented out per request */}
+            {/* <DarkModeToggle /> */}
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-4">
           {sidebarData.map((section, idx) => (
             <SidebarSection
               key={idx}
               section={section}
               activePage={activePage}
               onItemClick={handleItemClick}
-              open={openSection === section.section}
-              onToggle={() => handleToggleSection(section.section)}
             />
           ))}
         </nav>
@@ -106,7 +96,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-30
-                      bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700
+                      bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700
                       p-4 flex items-center justify-between">
         <button
           onClick={() => setMobileMenuOpen(true)}

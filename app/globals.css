@@ -123,3 +123,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Simple entrance animations for the dashboard */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in { animation: fadeInUp 420ms cubic-bezier(.22,.9,.35,1) both; }
+.animate-slide-up { animation: fadeIn 420ms cubic-bezier(.22,.9,.35,1) both; }
+
+/* Small utility to help preserve transform/opacity when adding inline delays */
+.animate-preserve { will-change: transform, opacity; }
+
+/* Respect user reduced motion preference: disable animations and ensure visibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-preserve {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Ensure animations leave the element visible after finishing */
+.animate-fade-in,
+.animate-slide-up { animation-fill-mode: both; }
+
