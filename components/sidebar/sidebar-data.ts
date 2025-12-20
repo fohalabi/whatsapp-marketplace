@@ -31,7 +31,7 @@ export const sidebarData: SidebarSection[] = [
     items: [
       { id: 'products', label: 'Products' },
       { id: 'pricing-manager', label: 'Pricing Manager' },
-      { id: 'stock-sync', label: 'Stock Sync', badge: 5 },
+      { id: 'stock-sync', label: 'Stock Sync', badge: 3 },
     ],
   },
   {
