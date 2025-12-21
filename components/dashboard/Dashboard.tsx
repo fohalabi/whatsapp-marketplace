@@ -225,7 +225,7 @@ const Dashboard: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState<'today' | '7days' | '30days'>('today');
 
   return (
-    <div className="flex-1 min-h-full bg-gray-100">
+    <div className="flex-1 min-h-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Page Header */}

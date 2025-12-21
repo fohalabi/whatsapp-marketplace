@@ -90,7 +90,7 @@ const mockAbandonedCarts = [
   },
   {
     id: 7,
-    customer: 'Peter Obi',
+    customer: 'Peter Obidi',
     phone: '+234 807 890 1234',
     items: [
       { name: 'Office Chair', quantity: 2, price: 95000 }

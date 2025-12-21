@@ -61,7 +61,7 @@ const mockReturns = [
   },
   { 
     id: 'ORD-016', 
-    customer: 'Peter Obi', 
+    customer: 'Peter Obidi', 
     reason: 'Item arrived late', 
     status: 'Pending', 
     refundAmount: 23000, 

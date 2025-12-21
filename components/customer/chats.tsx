@@ -371,7 +371,7 @@ const ChatsPage: React.FC = () => {
 
           {/* Chat List */}
           <div className="flex-1 overflow-y-auto">
-            {filteredChats.map((chat) => (
+            {filteredChats.map((chat: any) => (
               <ChatListItem
                 key={chat.id}
                 chat={chat}
@@ -477,7 +477,7 @@ const ChatsPage: React.FC = () => {
                 <ShoppingBag className="w-5 h-5" />
                 Recent Orders
               </h3>
-              <p className="text-xs text-gray-500 mb-4">Orders placed by this customer (most recent first). Click "View" to open order details.</p>
+              <p className="text-xs text-gray-500 mb-4">Orders placed by this customer (most recent first). Click `View` to open order details.</p>
 
               {activeChat.orders.length > 0 ? (
                 <div className="space-y-3">
