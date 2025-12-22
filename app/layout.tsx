@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Sidebar } from "@/components/sidebar/Sidebar";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -22,24 +21,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* Layout wrapper: sidebar on the left, content on the right */}
-          <div className="min-h-screen flex">
-            <Sidebar />
-
-            {/* Main content: stays to the right of the sidebar on large screens, has top padding for mobile header */}
-            <main className="flex-1 min-h-screen flex flex-col bg-gray-200 dark:bg-gray-900 pt-16 lg:pt-0">
-              {children}
-            </main>
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>
