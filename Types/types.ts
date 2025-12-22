@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+
 type ChatStatus = "online" | "offline";
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -6,6 +7,7 @@ export interface SidebarItem {
   id: string;
   label: string;
   badge?: number;
+  icon?: LucideIcon;
 }
 
 export interface SidebarSection {
