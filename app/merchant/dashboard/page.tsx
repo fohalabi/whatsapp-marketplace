@@ -1,9 +1,6 @@
+import MerchantDashboard from "@/components/merchant/dashboard/dashboard";
 
-export default function MerchantDashboard() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Merchant Dashboard</h1>
-      <p>Welcome to the merchant dashboard</p>
-    </div>
-  );
+
+export default function MerchantDashboardPage() {
+  return <MerchantDashboard />;
 }
