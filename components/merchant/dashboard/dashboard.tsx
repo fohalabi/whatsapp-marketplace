@@ -54,13 +54,13 @@ const MerchantDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between">
               <div>
@@ -124,9 +124,9 @@ const MerchantDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Orders Table */}
-          <div className="col-span-2 bg-white rounded-lg shadow">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
             </div>
