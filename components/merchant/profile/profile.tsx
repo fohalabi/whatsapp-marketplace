@@ -63,6 +63,40 @@ export default function MerchantProfilePage() {
 
   const verificationConfig = getVerificationConfig(profile.verificationStatus);
   const VerificationIcon = verificationConfig.icon;
+  const [governmentId, setGovernmentId] = useState<File | null>(null);
+  const [businessLicense, setBusinessLicense] = useState<File | null>(null);
+  const [productSample, setProductSample] = useState<File | null>(null);
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
+  const [isEditingVerification, setIsEditingVerification] = useState(false);
+
+  const handleVerificationSubmit = async () => {
+    const formData = new FormData();
+    
+    // Add business name from profile
+    formData.append('businessName', profile.businessName);
+    
+    // Add required fields
+    if (governmentId) formData.append('governmentId', governmentId);
+    if (productSample) formData.append('productSample', productSample);
+    formData.append('businessAddress', businessAddress);
+    
+    // Add optional fields
+    if (registrationNumber) formData.append('registrationNumber', registrationNumber);
+    if (businessLicense) formData.append('businessLicense', businessLicense);
+    
+    try {
+      const response = await fetch('/api/merchant/verification', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      console.log('Verification submitted:', data);
+    } catch (error) {
+      console.error('Error submitting verification:', error);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
@@ -115,7 +149,7 @@ export default function MerchantProfilePage() {
                   type="text"
                   value={isEditing ? editedProfile.businessName : profile.businessName}
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
@@ -132,7 +166,7 @@ export default function MerchantProfilePage() {
                   type="text"
                   value={isEditing ? editedProfile.category : profile.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
@@ -149,7 +183,7 @@ export default function MerchantProfilePage() {
                   type="text"
                   value={isEditing ? editedProfile.location : profile.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
@@ -180,12 +214,11 @@ export default function MerchantProfilePage() {
                   type="email"
                   value={isEditing ? editedProfile.email : profile.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
             </div>
-
             {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -197,7 +230,7 @@ export default function MerchantProfilePage() {
                   type="tel"
                   value={isEditing ? editedProfile.phone : profile.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
@@ -206,17 +239,189 @@ export default function MerchantProfilePage() {
         </div>
       </div>
 
+     {/* Verification Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <CheckCircle size={20} className="text-gray-400" />
+            Account Verification
+          </h2>
+          {isEditingVerification && profile.verificationStatus !== 'Verified' && (
+            <button
+              onClick={() => setIsEditingVerification(true)}
+              className='inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors'
+            >
+              <Edit2 size={16} />
+              Edit Verification Details
+            </button>
+          )}
+        </div>
+
+        <div className="p-6">
+          {/* Current Status */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Verification Status
+                </p>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm font-semibold rounded-full ${verificationConfig.color}`}>
+                  <VerificationIcon size={16} />
+                  {verificationConfig.label}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Business Registration Number - Optional */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Business Registration Number <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., RC123456"
+              disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Government ID Upload - Required */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Government-Issued ID <span className="text-red-500">*</span>
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                id="government-id"
+                accept="image/*,.pdf"
+                onChange={(e) => setGovernmentId(e.target.files?.[0] || null)}
+                disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
+                className="hidden"
+              />
+              <label
+                htmlFor="government-id"
+                className={`cursor-pointer ${profile.verificationStatus === 'Verified' || !isEditingVerification ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="text-gray-400 mb-2">
+                  <svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  PNG, JPG or PDF (max. 5MB)
+                </p>
+              </label>
+            </div>
+          </div>
+
+          {/* Business License/Certificate Upload - Optional */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Business License/Certificate <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                id="business-license"
+                accept="image/*,.pdf"
+                disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
+                className="hidden"
+              />
+              <label
+                htmlFor="business-license"
+                className={`cursor-pointer ${profile.verificationStatus === 'Verified' || !isEditingVerification ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="text-gray-400 mb-2">
+                  <svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  PNG, JPG or PDF (max. 5MB)
+                </p>
+              </label>
+            </div>
+          </div>
+
+          {/* Product Sample Upload - Required */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Product Sample <span className="text-red-500">*</span>
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Upload a clear photo of one of your products for review
+            </p>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                id="product-sample"
+                accept="image/*"
+                disabled={profile.verificationStatus === 'Verified' || !isEditingVerification}
+                className="hidden"
+              />
+              <label
+                htmlFor="product-sample"
+                className={`cursor-pointer ${profile.verificationStatus === 'Verified' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="text-gray-400 mb-2">
+                  <svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  PNG or JPG (max. 5MB)
+                </p>
+              </label>
+            </div>
+          </div>
+
+          {/* Location Confirmation - Required */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Business Address <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Enter your complete business address"
+              disabled={profile.verificationStatus === 'Verified'}
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          {/* Submit Button */}
+          {profile.verificationStatus !== 'Verified' && (
+            <button
+              onClick={handleVerificationSubmit}
+              className="w-full px-6 py-3 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+            >
+              Submit for Verification
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Action Buttons */}
-      {isEditing && (
+      {isEditingVerification && profile.verificationStatus !== 'Verified' && (
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <button
-            onClick={handleSave}
+            onClick={handleVerificationSubmit}
             className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
           >
-            Save Changes
+            Submit for Verification
           </button>
           <button
-            onClick={handleCancel}
+            onClick={() => setIsEditingVerification(false)}
             className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors"
           >
             Cancel

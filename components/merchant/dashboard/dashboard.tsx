@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Package, ShoppingBag, AlertTriangle, Wallet, Clock, CheckCircle, Circle } from 'lucide-react';
+import Link from 'next/link';
 
 // Mock data
 const summaryData = {
@@ -30,8 +33,10 @@ const alerts = {
     { orderId: 'ORD-1040', time: '8 minutes ago' },
   ]
 };
-
 const MerchantDashboard = () => {
+  const [verificationStatus, setVerificationStatus] = React.useState('not_verified');
+  const [rejectionReason, setRejectionReason] = React.useState('Business license document is unclear. Please upload a clearer image.');
+
   const getStatusBadge = (status: string) => {
     const styles = {
       'New': 'bg-blue-100 text-blue-700',
@@ -59,6 +64,56 @@ const MerchantDashboard = () => {
         {/* Header */}
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
+        {/* Verification Status Card */}
+        {verificationStatus !== 'verified' && (
+          <div className="mb-8">
+            <div className={`bg-white rounded-lg shadow border-l-4 p-6 ${
+              verificationStatus === 'rejected' ? 'border-red-500' : 
+              verificationStatus === 'under_review' ? 'border-blue-500' : 
+              'border-yellow-500'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    {verificationStatus === 'rejected' ? (
+                      <AlertTriangle className="w-6 h-6 text-red-600" />
+                    ) : verificationStatus === 'under_review' ? (
+                      <Clock className="w-6 h-6 text-blue-600" />
+                    ) : (
+                      <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                    )}
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {verificationStatus === 'rejected' ? 'Verification Rejected' :
+                      verificationStatus === 'under_review' ? 'Verification Under Review' :
+                      'Verification Required'}
+                    </h2>
+                  </div>
+                  <p className="text-gray-600 mb-4">
+                    {verificationStatus === 'rejected' ? (
+                      <>Your verification was rejected. Reason: {rejectionReason}</>
+                    ) : verificationStatus === 'under_review' ? (
+                      'Your verification documents are being reviewed. We\'ll notify you once complete.'
+                    ) : (
+                      'Your account is not yet verified. Complete verification to start receiving orders.'
+                    )}
+                  </p>
+                  {(verificationStatus === 'not_verified' || verificationStatus === 'rejected') && (
+                    <Link href="/merchant/profile">
+                      <button className={`font-medium px-6 py-2 rounded-lg transition-colors ${
+                        verificationStatus === 'rejected' 
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                      }`}>
+                        {verificationStatus === 'rejected' ? 'Resubmit Verification' : 'Complete Verification'}
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
@@ -71,9 +126,11 @@ const MerchantDashboard = () => {
                 <Package className="w-8 h-8 text-orange-600" />
               </div>
             </div>
-            <button className="mt-4 text-sm font-medium text-orange-600 hover:text-orange-700">
-              View all orders →
-            </button>
+            <Link href="/merchant/orders">
+              <button className="mt-4 text-sm font-medium text-orange-600 hover:text-orange-700">
+                View all orders →
+              </button>
+            </Link>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
@@ -86,9 +143,11 @@ const MerchantDashboard = () => {
                 <ShoppingBag className="w-8 h-8 text-blue-600" />
               </div>
             </div>
-            <button className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700">
-              Manage products →
-            </button>
+            <Link href="/merchant/products">
+              <button className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700">
+                Manage products →
+              </button>
+            </Link>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
@@ -101,9 +160,11 @@ const MerchantDashboard = () => {
                 <AlertTriangle className="w-8 h-8 text-red-600" />
               </div>
             </div>
-            <button className="mt-4 text-sm font-medium text-red-600 hover:text-red-700">
-              Restock now →
-            </button>
+            <Link href="/merchant/stock">
+              <button className="mt-4 text-sm font-medium text-red-600 hover:text-red-700">
+                Restock now →
+              </button>
+            </Link>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
@@ -118,9 +179,11 @@ const MerchantDashboard = () => {
                 <Wallet className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            <button className="mt-4 text-sm font-medium text-green-600 hover:text-green-700">
-              Withdraw funds →
-            </button>
+            <Link href="/merchant/wallet">
+              <button className="mt-4 text-sm font-medium text-green-600 hover:text-green-700">
+                Withdraw funds →
+              </button>
+            </Link>
           </div>
         </div>
 

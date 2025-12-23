@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Edit2, DollarSign, Package, X, Upload, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit2, DollarSign, Package, X, Upload, Trash2, AlertTriangle } from 'lucide-react';
+import Image from 'next/image';
 
 // Mock data
 const mockProducts = [
@@ -18,13 +19,29 @@ const MerchantProducts = () => {
   const [showForm, setShowForm] = useState(false);
   const [products, setProducts] = useState(mockProducts);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isVerified, setIsVerified] = useState(true); // TODO: Get from backend/context
+  const [businessName, setBusinessName] = useState('TechHub Electronics'); // TODO: Get from profile/context
+  const [productImages, setProductImages] = useState<File[]>([]);
+  
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     price: '',
-    images: [] as string[],
     variants: [{ type: '', value: '' }]
   });
+
+  // Check verification status when component loads
+  useEffect(() => {
+    // TODO: Replace with actual API call
+    const checkVerification = async () => {
+      // const response = await fetch('/api/merchant/verification-status');
+      // const data = await response.json();
+      // setIsVerified(data.isVerified);
+      // setBusinessName(data.businessName);
+    };
+    
+    checkVerification();
+  }, []);
 
   const getStockBadge = (stock: string) => {
     const styles = {
@@ -53,8 +70,18 @@ const MerchantProducts = () => {
   };
 
   const handleAddProduct = () => {
+    // Check if merchant is verified
+    if (!isVerified) {
+      // Redirect to profile page for verification
+      alert('Please complete your verification first');
+      window.location.href = '/merchant/profile';
+      // Or use Next.js router: router.push('/merchant/profile');
+      return;
+    }
+
     setEditingProduct(null);
-    setFormData({ name: '', category: '', price: '', images: [], variants: [{ type: '', value: '' }] });
+    setFormData({ name: '', category: '', price: '', variants: [{ type: '', value: '' }] });
+    setProductImages([]);
     setShowForm(true);
   };
 
@@ -64,20 +91,81 @@ const MerchantProducts = () => {
       name: product.name,
       category: product.category,
       price: product.price.toString(),
-      images: [],
       variants: [{ type: '', value: '' }]
     });
+    setProductImages([]);
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingProduct(null);
+    setProductImages([]);
   };
 
-  const handleSubmit = () => {
-    console.log('Submitting:', formData);
-    handleCloseForm();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      if (filesArray.length + productImages.length > 5) {
+        alert('Maximum 5 images allowed');
+        return;
+      }
+      setProductImages([...productImages, ...filesArray]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setProductImages(productImages.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!formData.name || !formData.category || !formData.price) {
+      alert('Please fill all required fields');
+      return;
+    }
+
+    if (productImages.length === 0) {
+      alert('Please upload at least one product image');
+      return;
+    }
+
+    const submitData = new FormData();
+    
+    // Add product details
+    submitData.append('name', formData.name);
+    submitData.append('category', formData.category);
+    submitData.append('price', formData.price);
+    submitData.append('businessName', businessName); // Add business name
+    
+    // Add images
+    productImages.forEach((image, index) => {
+      submitData.append(`images`, image);
+    });
+    
+    // Add variants
+    submitData.append('variants', JSON.stringify(formData.variants.filter(v => v.type && v.value)));
+    
+    try {
+      // TODO: Replace with actual API endpoint
+      const response = await fetch('/api/merchant/products', {
+        method: 'POST',
+        body: submitData
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Product submitted:', data);
+        alert('Product submitted for review successfully!');
+        handleCloseForm();
+        // Optionally refresh products list
+      } else {
+        alert('Failed to submit product');
+      }
+    } catch (error) {
+      console.error('Error submitting product:', error);
+      alert('Error submitting product. Please try again.');
+    }
   };
 
   const addVariant = () => {
@@ -101,14 +189,41 @@ const MerchantProducts = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
+        {/* Verification Warning Banner */}
+        {!isVerified && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-yellow-800 mb-1">
+                Verification Required
+              </h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                You need to complete your account verification before you can add products.
+              </p>
+              <button
+                onClick={() => window.location.href = '/merchant/profile'}
+                className="text-sm font-medium text-yellow-800 hover:text-yellow-900 underline"
+              >
+                Complete Verification Now →
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
+            {isVerified && (
+              <p className="text-sm text-gray-600 mt-1">Business: {businessName}</p>
+            )}
+          </div>
           <button
             onClick={handleAddProduct}
-            className="flex items-center gap-2 bg-orange-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-orange-700 font-medium transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 bg-orange-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-orange-700 font-medium transition-colors text-sm sm:text-base w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isVerified}
           >
             <Plus className="w-5 h-5" />
             Add Product
@@ -175,9 +290,12 @@ const MerchantProducts = () => {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
               {/* Form Header */}
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {editingProduct ? 'Edit Product' : 'Add New Product'}
-                </h2>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                    {editingProduct ? 'Edit Product' : 'Add New Product'}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">Business: {businessName}</p>
+                </div>
                 <button
                   onClick={handleCloseForm}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -246,11 +364,42 @@ const MerchantProducts = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Product Images <span className="text-red-500">*</span>
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center hover:border-orange-500 transition-colors cursor-pointer">
-                    <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                    <p className="text-xs sm:text-sm text-gray-600 mb-1">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-500">PNG, JPG up to 5MB (Max 5 images)</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center hover:border-orange-500 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="product-images"
+                    />
+                    <label htmlFor="product-images" className="cursor-pointer">
+                      <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-500">PNG, JPG up to 5MB (Max 5 images)</p>
+                    </label>
                   </div>
+
+                  {/* Image Preview */}
+                  {productImages.length > 0 && (
+                    <div className="mt-4 grid grid-cols-3 sm:grid-cols-5 gap-3">
+                      {productImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <Image
+                            src={URL.createObjectURL(image)}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                          />
+                          <button
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Variants */}
