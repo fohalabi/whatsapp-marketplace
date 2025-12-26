@@ -23,6 +23,8 @@ const mockProducts: Product[] = [
 
 export default function MerchantStockPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [modifiedProducts, setModifiedProducts] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
 
   const getStockStatus = (stock: number) => {
     if (stock === 0) return { label: 'Out of Stock', color: 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400' };
@@ -37,7 +39,27 @@ export default function MerchantStockPage() {
         ? { ...p, stock: stockValue, lastUpdated: 'Just now' }
         : p
     ));
+    setModifiedProducts(prev => new Set(prev).add(id));
   };
+
+  const handleSaveChanges = () => {
+    setIsSaving(true);
+    try {
+      const updates = products
+        .filter(p => modifiedProducts.has(p.id))
+        .map(p => ({ id: p.id, stock: p.stock }));
+
+      // api call to save updates would go here
+      console.log('Saving updates:', updates);
+
+      alert('Stock levels updated successfully!');
+      setModifiedProducts(new Set());
+    } catch (error) {
+      alert('Failed to update stock');
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -63,6 +85,18 @@ export default function MerchantStockPage() {
               {products.filter(p => p.stock > 0 && p.stock <= 10).length} product(s) are running low on stock
             </p>
           </div>
+        </div>
+      )}
+
+      {modifiedProducts.size > 0 && (
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={handleSaveChanges}
+            disabled={isSaving}
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
+          >
+            {isSaving ? 'Saving...' : `Save Changes (${modifiedProducts.size})`}
+          </button>
         </div>
       )}
 
