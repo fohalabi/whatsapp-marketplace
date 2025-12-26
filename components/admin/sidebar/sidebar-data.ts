@@ -7,8 +7,9 @@ import {
   DollarSign,
   Megaphone,
   Settings,
+  User,
 } from 'lucide-react';
-import { SidebarSection } from '@/Types/types';
+import { SidebarSection, SidebarSingleItem } from '@/Types/types';
 
 export const sidebarData: SidebarSection[] = [
   {
@@ -79,5 +80,13 @@ export const sidebarData: SidebarSection[] = [
       { id: 'admin/team-roles', label: 'Team Roles' },
       { id: 'admin/integrations', label: 'Integrations' },
     ],
+  },
+];
+
+export const sidebarSingleItems: SidebarSingleItem[] = [
+  {
+    id: 'admin/profile',
+    label: 'Profile',
+    icon: User,
   },
 ];

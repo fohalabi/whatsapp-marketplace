@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, User } from 'lucide-react';
 import { sidebarData } from './sidebar-data';
 import { SidebarSection } from './sidebarSection';
-// import { DarkModeToggle } from '@/components/darkmodetoggle'; // commented out per UX change (toggle removed)
+import Link from 'next/link';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Extract active page from pathname
-  const activePage = pathname.split('/')[1] || 'dashboard';
+  // Extract active page from pathname - fixed to get last segment
+  const activePage = pathname.split('admin/').pop() || 'dashboard';
 
   const handleItemClick = () => {
     setMobileMenuOpen(false);
@@ -73,9 +73,6 @@ export const Sidebar: React.FC = () => {
                            placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
             </div>
-
-            {/* ✅ Dark mode toggle commented out per request */}
-            {/* <DarkModeToggle /> */}
           </div>
         </div>
 
@@ -89,9 +86,23 @@ export const Sidebar: React.FC = () => {
               onItemClick={handleItemClick}
             />
           ))}
+          
+          {/* Profile Link */}
+          <Link
+            href="/admin/profile"
+            onClick={handleItemClick}
+            className={`
+              flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+              ${activePage === 'profile' 
+                ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300' 
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }
+            `}
+          >
+            <User className="h-5 w-5" />
+            <span className="font-medium">Profile</span>
+          </Link>
         </nav>
-
-
       </aside>
 
       {/* Mobile Header */}

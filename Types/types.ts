@@ -17,6 +17,12 @@ export interface SidebarSection {
   icon: LucideIcon;
   items: SidebarItem[];
 }
+
+export interface SidebarSingleItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
 export interface StatCardProps {
   label: string;
   value: string | number;
