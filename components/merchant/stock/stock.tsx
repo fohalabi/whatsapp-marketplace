@@ -23,6 +23,7 @@ const mockProducts: Product[] = [
 
 export default function MerchantStockPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [isEdit, setIsEdit] = useState(true);
 
   const getStockStatus = (stock: number) => {
     if (stock === 0) return { label: 'Out of Stock', color: 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400' };
@@ -35,6 +36,24 @@ export default function MerchantStockPage() {
     setProducts(products.map(p => 
       p.id === id 
         ? { ...p, stock: stockValue, lastUpdated: 'Just now' }
+        : p
+    ));
+  };
+  const addStock = (id: string, newStock: string) => {
+    setIsEdit(false);
+    const stockValue = parseInt(newStock) || 0;
+    setProducts(products.map(p => 
+      p.id === id 
+        ? { ...p, stock: stockValue, lastUpdated: 'Just now' }
+        : p
+    ));
+  };
+
+  const saveStock = (id: string) => {
+    setIsEdit(true);
+    setProducts(products.map(p => 
+      p.id === id 
+        ? { ...p, lastUpdated: 'Just now' }
         : p
     ));
   };
@@ -83,6 +102,9 @@ export default function MerchantStockPage() {
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                 Last Updated
               </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -102,6 +124,7 @@ export default function MerchantStockPage() {
                     <input
                       type="number"
                       min="0"
+                      disabled={isEdit}
                       value={product.stock}
                       onChange={(e) => handleStockUpdate(product.id, e.target.value)}
                       className="w-24 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -114,6 +137,14 @@ export default function MerchantStockPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     {product.lastUpdated}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                    <span onClick={() => addStock(product.id, product.stock.toString())} className="inline-flex px-3 justify-between cursor-pointer items-center py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      Edit
+                    </span>
+                    <span onClick={() => saveStock(product.id)} className="inline-flex px-3 justify-between cursor-pointer items-center py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-400">
+                      Save
+                    </span>
                   </td>
                 </tr>
               );
