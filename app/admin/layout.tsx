@@ -1,3 +1,4 @@
+import ProtectedRoute from '@/components/ProtectedRoutes';
 import { Sidebar } from '@/components/admin/sidebar/Sidebar';
 
 export default function AdminLayout({
@@ -6,7 +7,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen flex overflow-hidden">
+    <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SUPPORT']}>
+      <div className="h-screen flex overflow-hidden">
       <aside className="overflow-y-auto">
         <Sidebar />
       </aside>
@@ -14,5 +16,6 @@ export default function AdminLayout({
         {children}
       </main>
     </div>
+    </ProtectedRoute>
   );
 }
