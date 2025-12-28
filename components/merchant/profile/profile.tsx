@@ -130,6 +130,7 @@ export default function MerchantProfilePage() {
             <Image
               src={profilePictureUrl}
               alt="Profile"
+              fill
               className="w-24 h-24 rounded-full object-cover"
             />
             <div>
