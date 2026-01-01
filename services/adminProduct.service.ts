@@ -41,7 +41,7 @@ export const adminProductService = {
     return response.data;
   },
 
-  async getProductForSync() {
+  async getProductsForSync() {
     const response = await api.get('/admin/products/sync-products');
     return response.data;
   },

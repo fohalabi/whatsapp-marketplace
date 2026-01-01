@@ -1,113 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Wifi, WifiOff } from 'lucide-react';
+import { adminProductService } from '@/services/adminProduct.service';
 
 type StockStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
 type SyncStatus = 'Synced' | 'Not Synced';
 
 interface StockItem {
   id: string;
-  productName: string;
-  merchant: string;
-  merchantId: string;
-  currentStock: number;
+  name: string;
+  merchant: {
+    id: string;
+    businessName: string;
+  };
+  stockQuantity: number;
   stockStatus: StockStatus;
-  syncStatus: SyncStatus;
-  isEnabled: boolean;
-  lastSynced: string;
+  whatsappSyncStatus: 'SYNCED' | 'NOT_SYNCED' | 'FAILED';
+  isActive: boolean;
+  lastSyncedAt: string | null;
 }
-
-const mockStockItems: StockItem[] = [
-  {
-    id: 'P001',
-    productName: 'Classic Cotton T-Shirt',
-    merchant: 'Fashion Hub Store',
-    merchantId: 'M001',
-    currentStock: 150,
-    stockStatus: 'In Stock',
-    syncStatus: 'Synced',
-    isEnabled: true,
-    lastSynced: '2 mins ago',
-  },
-  {
-    id: 'P002',
-    productName: 'Wireless Bluetooth Headphones',
-    merchant: 'TechGear Nigeria',
-    merchantId: 'M002',
-    currentStock: 15,
-    stockStatus: 'Low Stock',
-    syncStatus: 'Synced',
-    isEnabled: true,
-    lastSynced: '5 mins ago',
-  },
-  {
-    id: 'P003',
-    productName: 'Organic Honey 500g',
-    merchant: 'Fresh Foods Market',
-    merchantId: 'M003',
-    currentStock: 0,
-    stockStatus: 'Out of Stock',
-    syncStatus: 'Synced',
-    isEnabled: false,
-    lastSynced: '1 hour ago',
-  },
-  {
-    id: 'P004',
-    productName: 'Leather Wallet - Premium',
-    merchant: 'Fashion Hub Store',
-    merchantId: 'M001',
-    currentStock: 80,
-    stockStatus: 'In Stock',
-    syncStatus: 'Not Synced',
-    isEnabled: true,
-    lastSynced: '30 mins ago',
-  },
-  {
-    id: 'P005',
-    productName: 'Smart Watch Series 5',
-    merchant: 'TechGear Nigeria',
-    merchantId: 'M002',
-    currentStock: 12,
-    stockStatus: 'Low Stock',
-    syncStatus: 'Synced',
-    isEnabled: true,
-    lastSynced: '10 mins ago',
-  },
-  {
-    id: 'P006',
-    productName: 'Ceramic Coffee Mug Set',
-    merchant: 'Home Essentials Plus',
-    merchantId: 'M004',
-    currentStock: 200,
-    stockStatus: 'In Stock',
-    syncStatus: 'Synced',
-    isEnabled: true,
-    lastSynced: '1 min ago',
-  },
-  {
-    id: 'P007',
-    productName: 'Gaming Mouse RGB',
-    merchant: 'TechGear Nigeria',
-    merchantId: 'M002',
-    currentStock: 8,
-    stockStatus: 'Low Stock',
-    syncStatus: 'Not Synced',
-    isEnabled: true,
-    lastSynced: '45 mins ago',
-  },
-  {
-    id: 'P008',
-    productName: 'Yoga Mat Premium',
-    merchant: 'Sports Arena Store',
-    merchantId: 'M006',
-    currentStock: 0,
-    stockStatus: 'Out of Stock',
-    syncStatus: 'Synced',
-    isEnabled: false,
-    lastSynced: '3 hours ago',
-  },
-];
 
 const StockStatusBadge = ({ status }: { status: StockStatus }) => {
   const config = {
@@ -202,11 +114,17 @@ const ProductToggle = ({
   );
 };
 
+const getStockStatus = (quantity: number): StockStatus => {
+  if (quantity === 0) return 'Out of Stock';
+  if (quantity <= 20) return 'Low Stock';
+  return 'In Stock';
+};
+
 const StockSummaryCards = ({ items }: { items: StockItem[] }) => {
-  const inStock = items.filter((i) => i.stockStatus === 'In Stock').length;
-  const lowStock = items.filter((i) => i.stockStatus === 'Low Stock').length;
-  const outOfStock = items.filter((i) => i.stockStatus === 'Out of Stock').length;
-  const notSynced = items.filter((i) => i.syncStatus === 'Not Synced').length;
+  const inStock = items.filter((i) => getStockStatus(i.stockQuantity) === 'In Stock').length;
+  const lowStock = items.filter((i) => getStockStatus(i.stockQuantity) === 'Low Stock').length;
+  const outOfStock = items.filter((i) => getStockStatus(i.stockQuantity) === 'Out of Stock').length;
+  const notSynced = items.filter((i) => i.whatsappSyncStatus === 'NOT_SYNCED').length;
 
   const cards = [
     {
@@ -258,51 +176,72 @@ const StockSummaryCards = ({ items }: { items: StockItem[] }) => {
 
 export default function StockSyncPage() {
   // State Management
-  const [stockItems, setStockItems] = useState(mockStockItems);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | StockStatus>('all');
   const [syncFilter, setSyncFilter] = useState<'all' | SyncStatus>('all');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredItems = stockItems.filter((item) => {
-    const matchesSearch = item.productName.toLowerCase().includes(searchQuery.toLowerCase());
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await adminProductService.getProductsForSync();
+      setStockItems(response.data);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+  
+  const filteredItems = stockItems.map((item: StockItem) => ({
+    ...item,
+    stockStatus: getStockStatus(item.stockQuantity)
+  })).filter((item: StockItem) => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStockStatus = stockFilter === 'all' || item.stockStatus === stockFilter;
-    const matchesSyncStatus = syncFilter === 'all' || item.syncStatus === syncFilter;
+    const matchesSyncStatus = syncFilter === 'all' || 
+      (syncFilter === 'Synced' ? item.whatsappSyncStatus === 'SYNCED' : item.whatsappSyncStatus === 'NOT_SYNCED');
     return matchesSearch && matchesStockStatus && matchesSyncStatus;
   });
 
-  const handleToggleProduct = (id: string, enabled: boolean) => {
-    setStockItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isEnabled: enabled } : item))
-    );
+  const handleToggleProduct = async (id: string, enabled: boolean) => {
+    try {
+      await adminProductService.toggleProductStatus(id, enabled);
+      await fetchProducts();
+    } catch (error) {
+      console.error('Toggle failed:', error);
+    }
   };
 
-  const handleSyncAll = () => {
+  const handleSyncAll = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
-      setStockItems((prev) =>
-        prev.map((item) => ({
-          ...item,
-          syncStatus: 'Synced' as SyncStatus,
-          lastSynced: 'Just now',
-        }))
-      );
+    try {
+      await adminProductService.syncAllProducts();
+      await fetchProducts();
+    } catch (error) {
+      console.error('Sync failed:', error);
+    } finally {
       setIsSyncing(false);
-    }, 2000);
+    }
   };
 
-  const handleSyncSingle = (id: string) => {
-    setStockItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, syncStatus: 'Synced' as SyncStatus, lastSynced: 'Just now' }
-          : item
-      )
-    );
+  const handleSyncSingle = async (id: string) => {
+    try {
+      await adminProductService.syncSingleProduct(id);
+      await fetchProducts();
+    } catch (error) {
+      console.error('Sync single product failed', error);
+    }
   };
 
-  const lowStockCount = stockItems.filter((i) => i.stockStatus === 'Low Stock').length;
-  const outOfStockCount = stockItems.filter((i) => i.stockStatus === 'Out of Stock').length;
+  const lowStockCount = stockItems.filter((i: StockItem) => getStockStatus(i.stockQuantity) === 'Low Stock').length;
+  const outOfStockCount = stockItems.filter((i: StockItem) => getStockStatus(i.stockQuantity) === 'Out of Stock').length;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -408,64 +347,79 @@ export default function StockSyncPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                    item.stockStatus === 'Out of Stock' ? 'bg-gray-50 dark:bg-gray-700 opacity-75' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {item.productName}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.id}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm text-gray-900 dark:text-gray-100">{item.merchant}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.merchantId}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {item.currentStock}
-                      <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">units</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StockStatusBadge status={item.stockStatus} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <SyncStatusIndicator status={item.syncStatus} lastSynced={item.lastSynced} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <ProductToggle
-                      isEnabled={item.isEnabled}
-                      onChange={(enabled) => handleToggleProduct(item.id, enabled)}
-                      stockStatus={item.stockStatus}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {item.syncStatus === 'Not Synced' && (
-                      <button
-                        onClick={() => handleSyncSingle(item.id)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        Sync Now
-                      </button>
-                    )}
-                    {item.syncStatus === 'Synced' && (
-                      <span className="text-sm text-gray-400 dark:text-gray-500">Up to date</span>
-                    )}
+
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={7} className='text-center py-16'>
+                    <RefreshCw className='w-8 h-8 text-gray-400 animate-spin mx-auto mb-3' />
+                    <p className='text-gray-500'>Loading products...</p>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredItems.map((item: StockItem) => (
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      getStockStatus(item.stockQuantity) === 'Out of Stock' ? 'bg-gray-50 dark:bg-gray-700 opacity-75' : ''
+                    }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {item.name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.id}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm text-gray-900 dark:text-gray-100">{item.merchant.businessName}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.merchant.id}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        {item.stockQuantity}
+                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">units</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StockStatusBadge status={item.stockStatus} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <SyncStatusIndicator 
+                        status={item.whatsappSyncStatus === 'SYNCED' ? 'Synced' : 'Not Synced'} 
+                        lastSynced={item.lastSyncedAt || 'Never'} 
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <ProductToggle
+                        isEnabled={item.isActive}
+                        onChange={(enabled) => handleToggleProduct(item.id, enabled)}
+                        stockStatus={getStockStatus(item.stockQuantity)}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {item.whatsappSyncStatus === 'NOT_SYNCED' && (
+                        <button
+                          onClick={() => handleSyncSingle(item.id)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Sync Now
+                        </button>
+                      )}
+                      {item.whatsappSyncStatus === 'SYNCED' && (
+                        <span className="text-sm text-gray-400 dark:text-gray-500">Up to date</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
 

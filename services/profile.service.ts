@@ -80,4 +80,40 @@ export const profileService = {
     const response = await api.get('/merchant/products');
     return response.data;
   },
+
+  // Team manaagement methods
+  getAllTeamMembers: async () => {
+    const response = await api.get('/admin/team');
+    return response.data;
+  },
+
+  inviteTeamMember: async (data: { name: string; email: string; role: string }) => {
+    const response = await api.post('/admin/team/invite', data);
+    return response.data;
+  },
+
+  updateMemberRole: async (memberId: string, role: string) => {
+    const response = await api.patch(`/admin/team/${memberId}/role`, { role });
+    return response.data;
+  },
+
+  toggleMemberStatus: async (memberId: string) => {
+    const response = await api.patch(`/admin/team/${memberId}/status`);
+    return response.data;
+  },
+
+  getRolePermissions: async () => {
+    const response = await api.get('/admin/team/roles');
+    return response.data;
+  },
+
+  verifyInviteToken: async (token: string) => {
+    const response = await api.get(`/admin/team/verify-invite/${token}`);
+    return response.data;
+  },
+
+  acceptInvite: async (data: { token: string; password: string }) => {
+    const response = await api.post('/admin/team/accept-invite', data);
+    return response.data;
+  },
 };
