@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Save, TrendingUp, AlertCircle } from 'lucide-react';
+import { Search, TrendingUp, AlertCircle } from 'lucide-react';
 import { adminProductService } from '@/services/adminProduct.service';
 
 type PriceStatus = 'Active' | 'Inactive';

@@ -40,4 +40,19 @@ export const adminProductService = {
     const response = await api.patch(`/admin/products/${productId}/toggle-status`, { isActive });
     return response.data;
   },
+
+  async getProductForSync() {
+    const response = await api.get('/admin/products/sync-products');
+    return response.data;
+  },
+
+  async syncSingleProduct(productId: string) {
+    const response = await api.post(`/admin/products/${productId}/sync`);
+    return response.data;
+  },
+
+  async syncAllProducts() {
+    const response = await api.post('/admin/products/sync-all');
+    return response.data;
+  }
 };
