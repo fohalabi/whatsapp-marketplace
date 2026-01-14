@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -12,7 +12,6 @@ import {
   XCircle,
   MessageSquare,
   CreditCard,
-  MapPin,
   Users,
   Megaphone,
   Wallet,
@@ -26,8 +25,6 @@ import { useRouter } from 'next/navigation';
 import { StatCardProps, StatusBadgeProps } from '@/Types/types';
 import { motion } from 'framer-motion';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -105,13 +102,18 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
     down: { color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
   };
 
-  const key = (status || '').toLowerCase() as keyof typeof config;
-  const { color, dot } = config[key] ?? config.operational;
+  // Safely normalize and validate status
+  const normalizedStatus = (status || 'operational').toLowerCase();
+  const key = normalizedStatus as keyof typeof config;
+  
+  // Fallback to operational if status is invalid
+  const { color, dot } = config[key] || config.operational;
+  const displayStatus = config[key] ? status : 'Operational';
   
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
       <span className={`w-2 h-2 mr-1.5 rounded-full ${dot}`} />
-      {status}
+      {displayStatus}
     </span>
   );
 };
@@ -307,16 +309,7 @@ const CategoryPerformanceChart: React.FC<{ data: Array<{ name: string; value: nu
               ))}
             </Pie>
             <Tooltip 
-              formatter={(value: number, name: string) => {
-                if (name === 'value') return [`${value}%`, 'Market Share'];
-                if (name === 'revenue') return [`₦${value.toLocaleString()}`, 'Revenue'];
-                return [value, name];
-              }}
-              contentStyle={{ 
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem'
-              }}
+              formatter={(value: number | undefined) => [(value || 0), 'Orders']}
             />
             <Legend />
           </PieChart>
@@ -354,11 +347,7 @@ const MerchantComparisonChart: React.FC<{ data: Array<{ name: string; orders: nu
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip 
               content={<CustomTooltip />}
-              formatter={(value: number, name: string) => {
-                if (name === 'revenue') return [`₦${value.toLocaleString()}`, 'Revenue'];
-                if (name === 'orders') return [value, 'Orders'];
-                return [value, name];
-              }}
+              formatter={(value: number | undefined) => [`₦${(value || 0).toLocaleString()}`, '']}
             />
             <Legend />
             <Bar yAxisId="left" dataKey="orders" name="Orders" fill="#8884d8" radius={[4, 4, 0, 0]} />
@@ -372,6 +361,17 @@ const MerchantComparisonChart: React.FC<{ data: Array<{ name: string; orders: nu
 
 // Geographic Heat Map Chart
 const GeographicHeatMap: React.FC<{ data: Array<{ zone: string; orders: number; revenue: number; deliveryTime: number; averageFee: number }> }> = ({ data }) => {
+  const topRevenueZone = useMemo(() => {
+    return data.length > 0 ? data[0] : null;
+  }, [data]);
+
+  const fastestDeliveryZone = useMemo(() => {
+    if (data.length === 0) return null;
+    return data.reduce((prev, current) => 
+      (prev.deliveryTime < current.deliveryTime) ? prev : current 
+    );
+  }, [data]);
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <h3 className="font-semibold text-gray-900 mb-4">Delivery Zone Performance</h3>
@@ -397,13 +397,14 @@ const GeographicHeatMap: React.FC<{ data: Array<{ zone: string; orders: number; 
               range={[50, 400]} 
               name="Delivery Time" 
             />
-            <Tooltip 
+           <Tooltip 
               cursor={{ strokeDasharray: '3 3' }}
-              formatter={(value: number, name: string) => {
+              formatter={(value: number | undefined, name: string | undefined) => {
+                if (!value) return ['0', name || ''];
                 if (name === 'revenue') return [`₦${value.toLocaleString()}`, 'Revenue'];
                 if (name === 'orders') return [value, 'Orders'];
                 if (name === 'deliveryTime') return [`${value} mins`, 'Avg Delivery Time'];
-                return [value, name];
+                return [value, name || ''];
               }}
             />
             <Legend />
@@ -419,16 +420,20 @@ const GeographicHeatMap: React.FC<{ data: Array<{ zone: string; orders: number; 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <div className="text-center">
           <div className="text-sm font-medium text-gray-600">Top Revenue Zone</div>
-          <div className="text-lg font-semibold text-gray-900">{data[0]?.zone || 'N/A'}</div>
-          <div className="text-sm text-gray-500">₦{(data[0]?.revenue || 0).toLocaleString()}</div>
+          <div className="text-lg font-semibold text-gray-900">
+            {topRevenueZone?.zone || 'N/A'}
+          </div>
+          <div className="text-sm text-gray-500">
+            ₦{topRevenueZone?.revenue.toLocaleString() || '0'}
+          </div>
         </div>
         <div className="text-center">
           <div className="text-sm font-medium text-gray-600">Fastest Delivery</div>
           <div className="text-lg font-semibold text-gray-900">
-            {data.reduce((prev, current) => (prev.deliveryTime < current.deliveryTime) ? prev : current).zone}
+            {fastestDeliveryZone?.zone || 'N/A'}
           </div>
           <div className="text-sm text-gray-500">
-            {data.reduce((prev, current) => (prev.deliveryTime < current.deliveryTime) ? prev : current).deliveryTime} mins avg
+            {fastestDeliveryZone ? `${fastestDeliveryZone.deliveryTime} mins avg` : 'No data'}
           </div>
         </div>
       </div>
@@ -651,7 +656,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState(false);
   const router = useRouter();
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError(false);
     
@@ -672,7 +677,7 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeFilter]);
 
   const handleHealthCheck = async () => {
     try {

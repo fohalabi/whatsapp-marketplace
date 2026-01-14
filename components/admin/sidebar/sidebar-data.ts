@@ -43,6 +43,7 @@ export const sidebarData: SidebarSection[] = [
       { id: 'admin/fulfillment', label: 'Fulfillment' },
       { id: 'admin/returns', label: 'Returns', badge: 7 },
       { id: 'admin/deliveries', label: 'Deliveries' },
+      { id: 'admin/riders', label: 'Riders' },
     ],
   },
   {

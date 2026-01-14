@@ -25,6 +25,10 @@ interface Delivery {
   status: DeliveryStatus;
   pickupAddress: string;
   deliveryAddress: string;
+  pickupLatitude: number;  
+  pickupLongitude: number; 
+  deliveryLatitude: number; 
+  deliveryLongitude: number; 
   recipientName: string;
   recipientPhone: string;
   deliveryFee: number;
@@ -42,6 +46,8 @@ interface RiderProfile {
   rating: number;
   totalDeliveries: number;
   vehicleType: string;
+  approvalStatus: string;
+  rejectionReason?: string;
 }
 
 export default function RiderDashboard() {
@@ -133,6 +139,35 @@ export default function RiderDashboard() {
         <div className="text-center">
           <Truck className="w-12 h-12 text-blue-600 animate-pulse mx-auto mb-4" />
           <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if rider is approved
+  if (profile && profile.approvalStatus !== 'APPROVED') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Pending Approval</h2>
+          <p className="text-gray-600 mb-6">
+            Your rider application is under review. You'll be notified once approved.
+          </p>
+          {profile.approvalStatus === 'REJECTED' && profile.rejectionReason && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
+              <p className="text-sm text-red-600">{profile.rejectionReason}</p>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Logout
+          </button>
         </div>
       </div>
     );
@@ -276,10 +311,10 @@ export default function RiderDashboard() {
                 {/* Delivery Map */}
                 <div className='mb-4'>
                   <DeliveryMap
-                    pickupLat={6.5244}
-                    pickupLng={3.3792}
-                    deliveryLat={6.4281}
-                    deliveryLng={3.4214}
+                    pickupLat={delivery.pickupLatitude}
+                    pickupLng={delivery.pickupLongitude}
+                    deliveryLat={delivery.deliveryLatitude}
+                    deliveryLng={delivery.deliveryLongitude}
                     riderLat={riderLocation?.lat}
                     riderLng={riderLocation?.lng}
                   />
