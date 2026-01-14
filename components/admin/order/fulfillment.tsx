@@ -219,15 +219,6 @@ const FulfillmentRow: React.FC<FulfillmentRowProps> = ({
   );
 };
 
-// Mock rider data (you might want to fetch this from API)
-const availableRiders = [
-  { id: 'R001', name: 'Ahmed Kamaldeen' },
-  { id: 'R002', name: 'Fatima Bello' },
-  { id: 'R003', name: 'Chinedu Okafor' },
-  { id: 'R004', name: 'Musa Ibrahim' },
-  { id: 'R005', name: 'Grace Williams' },
-];
-
 // Main Fulfillment Page Component
 const FulfillmentPage: React.FC = () => {
   const [fulfillments, setFulfillments] = useState<Fulfillment[]>([]);
@@ -252,8 +243,8 @@ const FulfillmentPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await fulfillmentService.getAllFulfillments();
-      setApiFulfillments(data);
-      setFulfillments(data.map(formatFulfillment));
+      setApiFulfillments(data.data.deliveries);
+      setFulfillments(data.data.deliveries.map(formatFulfillment));
     } catch (error) {
       console.error('Failed to fetch fulfillments:', error);
       toast.error('Failed to load fulfillment data. Please try again.');
@@ -267,7 +258,7 @@ const FulfillmentPage: React.FC = () => {
     try {
       setLoadingStats(true);
       const data = await fulfillmentService.getFulfillmentStats();
-      setStats(data);
+      setStats(data.data.deliveries);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {

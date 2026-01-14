@@ -527,8 +527,8 @@ const ActiveOrdersPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await orderManagementService.getAllOrders();
-      setApiOrders(data);
-      setOrders(data.map(formatOrder));
+      setApiOrders(data.data.orders);
+      setOrders(data.data.orders.map(formatOrder));
     } catch (error) {
       console.error('Failed to fetch orders:', error);
       toast.error('Failed to load orders. Please try again.');
@@ -542,7 +542,7 @@ const ActiveOrdersPage: React.FC = () => {
     try {
       setLoadingStats(true);
       const data = await orderManagementService.getOrderStats();
-      setStats(data);
+      setStats(data.data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {

@@ -340,7 +340,9 @@ export default function OnboardingPage() {
 
       console.log('Response:', response);
 
-      const transformedMerchants = response.data.map(m => {
+      const transformedMerchants = response.data
+      .filter(m => m && m.verification)
+      .map(m => {
         const steps: OnboardingStep[] = [
           {
             id: 'id-verify',
@@ -412,12 +414,6 @@ export default function OnboardingPage() {
       console.log('Count:', transformedMerchants.length);
       console.log('Loading State:', loading);
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        toast.error('Acess denied');
-        router.push('/admin/dashboard');
-      } else {
-        toast.error('Failed to load pending Merchants');
-      } 
       console.error('Failed to fetch pending merchants:', error);
     } finally {
       setLoading(false);
