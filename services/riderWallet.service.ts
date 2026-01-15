@@ -9,6 +9,10 @@ export const riderWalletService = {
     return api.get('/rider/wallet/transactions');
   },
 
+  getWithdrawalHistory: async (limit = 50) => {
+    return api.get(`/rider/wallet/withdrawals?limit=${limit}`);
+  },
+
   requestWithdrawal: async (amount: number, bankDetails: {
     accountName: string;
     accountNumber: string;

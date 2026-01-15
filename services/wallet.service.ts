@@ -86,14 +86,13 @@ class WalletService {
     return response.data.data;
   }
 
-  // Admin: adjust merchant balance
-  async adjustMerchantBalance(merchantId: string, data: AdjustmentRequest) {
-    const response = await api.post(`/wallet/merchant/${merchantId}/adjust`, data);
-    return response.data;
+  async getAllMerchantWallets(): Promise<MerchantWallet[]> {
+    const response = await api.get('/wallet/merchants');
+    return response.data.data;
   }
 
-  async getAllMerchantWallets(): Promise<MerchantWallet[]> {
-    const response = await api.get('/wallet/merchant/all');
+  async getPlatformWallet(): Promise<{ totalRevenue: number; totalPayouts: number; currentBalance: number; deliveryFeeEarnings: number }> {
+    const response = await api.get('/wallet/platform');
     return response.data.data;
   }
 }
