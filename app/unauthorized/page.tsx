@@ -14,7 +14,7 @@ export default function UnauthorizedPage() {
     } else if (['ADMIN', 'MANAGER', 'SUPPORT'].includes(user?.role)) {
       router.push('/admin/dashboard');
     } else {
-      router.push('/login');
+      router.push('/');
     }
   };
 

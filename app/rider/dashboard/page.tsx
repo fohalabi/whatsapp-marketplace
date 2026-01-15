@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth.service';
 import { riderService } from '@/services/rider.service';
 import DeliveryMap from '@/components/rider/DeliverMap';
+import { Wallet } from 'lucide-react';
 
 import { 
   Power, 
@@ -48,6 +49,8 @@ interface RiderProfile {
   vehicleType: string;
   approvalStatus: string;
   rejectionReason?: string;
+  walletBalance: number;
+  totalEarnings: number;
 }
 
 export default function RiderDashboard() {
@@ -215,12 +218,20 @@ export default function RiderDashboard() {
               <p className="text-blue-100 text-sm">{profile?.vehicleType}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/rider/wallet')}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <Wallet className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Status Toggle */}
@@ -256,6 +267,10 @@ export default function RiderDashboard() {
           <div className="bg-white/10 rounded-lg p-4">
             <p className="text-blue-100 text-sm">Rating</p>
             <p className="text-2xl font-bold">⭐ {profile?.rating.toFixed(1) || '0.0'}</p>
+          </div>
+          <div className='bg-white/10 rounded-lg p-4'>
+            <p className='text-blue-100 text-sm'>Earnings</p>
+            <p className="text-2xl font-bold">₦{profile?.totalEarnings?.toFixed(2) || '0.00'}</p>
           </div>
         </div>
       </div>
