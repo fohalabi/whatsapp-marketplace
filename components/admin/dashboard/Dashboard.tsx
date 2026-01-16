@@ -286,39 +286,6 @@ const RevenueTrendChart: React.FC<{ data: Array<{ period: string; revenue: numbe
   );
 };
 
-// Category Performance Chart
-const CategoryPerformanceChart: React.FC<{ data: Array<{ name: string; value: number; revenue: number; orders: number; color: string }> }> = ({ data }) => {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="font-semibold text-gray-900 mb-4">Category Performance</h3>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip 
-              formatter={(value: number | undefined) => [(value || 0), 'Orders']}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
 // Merchant Comparison Chart
 const MerchantComparisonChart: React.FC<{ data: Array<{ name: string; orders: number; revenue: number; rating: number }> }> = ({ data }) => {
   const router = useRouter();
@@ -353,123 +320,6 @@ const MerchantComparisonChart: React.FC<{ data: Array<{ name: string; orders: nu
             <Bar yAxisId="left" dataKey="orders" name="Orders" fill="#8884d8" radius={[4, 4, 0, 0]} />
             <Bar yAxisId="right" dataKey="revenue" name="Revenue" fill="#82ca9d" radius={[4, 4, 0, 0]} />
           </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
-// Geographic Heat Map Chart
-const GeographicHeatMap: React.FC<{ data: Array<{ zone: string; orders: number; revenue: number; deliveryTime: number; averageFee: number }> }> = ({ data }) => {
-  const topRevenueZone = useMemo(() => {
-    return data.length > 0 ? data[0] : null;
-  }, [data]);
-
-  const fastestDeliveryZone = useMemo(() => {
-    if (data.length === 0) return null;
-    return data.reduce((prev, current) => 
-      (prev.deliveryTime < current.deliveryTime) ? prev : current 
-    );
-  }, [data]);
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="font-semibold text-gray-900 mb-4">Delivery Zone Performance</h3>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid stroke="#f0f0f0" />
-            <XAxis 
-              type="number" 
-              dataKey="revenue" 
-              name="Revenue" 
-              unit="M" 
-              tickFormatter={(value) => `₦${(value / 1000000).toFixed(1)}`}
-            />
-            <YAxis 
-              type="number" 
-              dataKey="orders" 
-              name="Orders" 
-            />
-            <ZAxis 
-              type="number" 
-              dataKey="deliveryTime" 
-              range={[50, 400]} 
-              name="Delivery Time" 
-            />
-           <Tooltip 
-              cursor={{ strokeDasharray: '3 3' }}
-              formatter={(value: number | undefined, name: string | undefined) => {
-                if (!value) return ['0', name || ''];
-                if (name === 'revenue') return [`₦${value.toLocaleString()}`, 'Revenue'];
-                if (name === 'orders') return [value, 'Orders'];
-                if (name === 'deliveryTime') return [`${value} mins`, 'Avg Delivery Time'];
-                return [value, name || ''];
-              }}
-            />
-            <Legend />
-            <Scatter 
-              name="Delivery Zones" 
-              data={data} 
-              fill="#8884d8" 
-              shape="circle"
-            />
-          </ScatterChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <div className="text-center">
-          <div className="text-sm font-medium text-gray-600">Top Revenue Zone</div>
-          <div className="text-lg font-semibold text-gray-900">
-            {topRevenueZone?.zone || 'N/A'}
-          </div>
-          <div className="text-sm text-gray-500">
-            ₦{topRevenueZone?.revenue.toLocaleString() || '0'}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-sm font-medium text-gray-600">Fastest Delivery</div>
-          <div className="text-lg font-semibold text-gray-900">
-            {fastestDeliveryZone?.zone || 'N/A'}
-          </div>
-          <div className="text-sm text-gray-500">
-            {fastestDeliveryZone ? `${fastestDeliveryZone.deliveryTime} mins avg` : 'No data'}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Order Velocity Radar Chart
-const OrderVelocityChart: React.FC<{ data: Array<{ zone: string; orders: number; revenue: number; deliveryTime: number; averageFee: number }> }> = ({ data }) => {
-  const radarData = data.map(zone => ({
-    subject: zone.zone,
-    orders: zone.orders,
-    fullMark: Math.max(...data.map(d => d.orders)),
-  }));
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="font-semibold text-gray-900 mb-4">Zone Order Distribution</h3>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="subject" />
-            <PolarRadiusAxis />
-            <Radar
-              name="Orders"
-              dataKey="orders"
-              stroke="#8884d8"
-              fill="#8884d8"
-              fillOpacity={0.6}
-            />
-            <Tooltip 
-              formatter={(value: number) => [value, 'Orders']}
-            />
-            <Legend />
-          </RadarChart>
         </ResponsiveContainer>
       </div>
     </div>
@@ -548,13 +398,13 @@ const OrderFlowPanel: React.FC<{ orderFlow: any }> = ({ orderFlow }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="bg-white rounded-lg border border-gray-200 mb-8"
+      className="bg-white rounded-lg border border-gray-200 mb-6"
     >
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Order Flow Status</h2>
         <span className="text-xs text-gray-500">Click to filter orders</span>
       </div>
-      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {ORDER_STATUSES.map(s => (
           <OrderStatusButton key={s.key} status={s} count={counts[s.key]} />
         ))}
@@ -569,7 +419,7 @@ const SystemHealthItem: React.FC<{ service: string; status: string; icon: IconTy
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay }}
-    className="flex items-center justify-between p-3"
+    className="flex items-center justify-between p-2.5"
   >
     <div className="flex items-center">
       <Icon className="w-5 h-5 text-gray-400 mr-3" />
@@ -590,18 +440,12 @@ const QuickActionsCard = () => {
     >
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
-        <p className="text-sm text-gray-500 mt-1">Frequently used admin actions</p>
       </div>
       <div className="p-6 space-y-3">
         <ActionButton icon={Users} label="Verify New Merchant" variant="primary" delay={0} />
         <ActionButton icon={Megaphone} label="Create Broadcast" delay={0.1} />
         <ActionButton icon={Wallet} label="View Pending Payouts" delay={0.2} />
         <ActionButton icon={Download} label="Download Daily Report" delay={0.3} />
-      </div>
-      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <p className="text-xs text-gray-500">
-          Need help? <a href="#" className="text-blue-600 hover:text-blue-700">View admin guide →</a>
-        </p>
       </div>
     </motion.div>
   );
@@ -661,7 +505,10 @@ const Dashboard: React.FC = () => {
     setError(false);
     
     try {
-      const response = await adminDashboardService.getDashboard({ timeFrame: timeFilter });
+      const backendTimeFrame = timeFilter === 'week' ? '7days' : timeFilter === 'month' ? '30days' : 'today';
+      const response = await adminDashboardService.getDashboardData({
+        timeFrame: backendTimeFrame as '7days' | ''
+      })
       
       if (response.success) {
         setDashboardData(response.data);
@@ -737,7 +584,7 @@ const Dashboard: React.FC = () => {
     return <DashboardError onRetry={fetchDashboardData} />;
   }
 
-  const { stats, revenueTrend, categoryPerformance, topMerchants, deliveryZones, orderFlow, alerts, systemHealth, quickStats } = dashboardData;
+  const { stats, revenueTrend, topMerchants, orderFlow, alerts, systemHealth } = dashboardData;
 
   return (
     <div className="flex-1 min-h-full">
@@ -818,124 +665,37 @@ const Dashboard: React.FC = () => {
           />
         </motion.div>
 
-        {/* Additional Stats Row */}
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <StatCard
-            label="Pending Verifications"
-            value={stats.pendingMerchantVerifications.toLocaleString()}
-            trend={stats.pendingMerchantVerifications > 0 ? 'down' : 'up'}
-            trendValue="Requires attention"
-            icon={CheckCircle}
-            delay={0}
-          />
-          <StatCard
-            label="Pending Payouts"
-            value={`₦${stats.pendingPayouts.toLocaleString()}`}
-            trend="down"
-            trendValue="To be processed"
-            icon={Wallet}
-            delay={80}
-          />
-          <StatCard
-            label="Platform Commission"
-            value={`₦${stats.platformCommission.toLocaleString()}`}
-            trend="up"
-            trendValue="Earned this period"
-            icon={CreditCard}
-            delay={160}
-          />
-          <StatCard
-            label="Avg Order Value"
-            value={`₦${stats.averageOrderValue.toLocaleString()}`}
-            trend="up"
-            trendValue="Average per order"
-            icon={TrendingUp}
-            delay={240}
-          />
-        </motion.div>
-
-        {/* Quick Stats Row */}
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <StatCard
-            label="New Merchants Today"
-            value={quickStats.newMerchantsToday.toString()}
-            trend="up"
-            trendValue="Today"
-            icon={Users}
-            delay={0}
-          />
-          <StatCard
-            label="New Orders Today"
-            value={quickStats.newOrdersToday.toString()}
-            trend="up"
-            trendValue="Today"
-            icon={ShoppingCart}
-            delay={80}
-          />
-          <StatCard
-            label="Revenue Today"
-            value={`₦${quickStats.totalRevenueToday.toLocaleString()}`}
-            trend="up"
-            trendValue="Today"
-            icon={DollarSign}
-            delay={160}
-          />
-          <StatCard
-            label="Active Users Today"
-            value={quickStats.activeUsersToday.toString()}
-            trend="up"
-            trendValue="Today"
-            icon={TrendingUp}
-            delay={240}
-          />
-        </motion.div>
-
         {/* Order Flow Status */}
         <OrderFlowPanel orderFlow={orderFlow} />
 
         {/* Charts Section - Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="mb-6">
           <RevenueTrendChart data={revenueTrend} />
-          <CategoryPerformanceChart data={categoryPerformance} />
         </div>
 
         {/* Charts Section - Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+       <div className="mb-6">
           <MerchantComparisonChart data={topMerchants.map(m => ({ 
             name: m.name, 
             orders: m.orders, 
             revenue: m.revenue, 
             rating: m.rating 
           }))} />
-          <GeographicHeatMap data={deliveryZones} />
         </div>
 
         {/* Bottom Three Columns Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Order Velocity Radar */}
-          <div className="lg:col-span-1">
-            <OrderVelocityChart data={deliveryZones} />
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Alerts & Exceptions */}
           <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Alerts & Exceptions</h2>
-              <p className="text-sm text-gray-500 mt-1">Requires immediate attention</p>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Alerts & Exceptions</h2>
+                <p className="text-sm text-gray-500 mt-1">Requires immediate attention</p>
+              </div>
+              <button className="text-sm text-blue-600 hover:text-blue-700">View All</button>
             </div>
             <div className="divide-y divide-gray-200">
-              {alerts.slice(0, 4).map((alert, index) => (
+              {alerts.slice(0, 3).map((alert, index) => (
                 <AlertItem
                   key={index}
                   type={alert.type}
@@ -965,10 +725,9 @@ const Dashboard: React.FC = () => {
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">System Health Monitor</h2>
-            <p className="text-sm text-gray-500 mt-1">Real-time service status</p>
           </div>
           <div className="divide-y divide-gray-200">
-            {systemHealth.map((service, index) => (
+            {systemHealth.slice(0, 5).map((service, index) => (
               <SystemHealthItem
                 key={index}
                 service={service.service}

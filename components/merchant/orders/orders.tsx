@@ -114,7 +114,8 @@ export default function MerchantOrdersPage() {
       setLoading(true);
       const data = await orderManagementService.getMerchantOrders();
       setApiOrders(data);
-      setOrders(data.map(formatOrder));
+      console.log('Orders response:', data);
+      setOrders(Array.isArray(data) ? data.map(formatOrder) : (data.orders || []).map(formatOrder));
     } catch (error) {
       console.error('Failed to fetch merchant orders:', error);
       toast.error('Failed to load orders. Please try again.');

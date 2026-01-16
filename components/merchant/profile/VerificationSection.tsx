@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, Clock, Edit2 } from 'lucide-react';
 
-type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+type VerificationStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 interface VerificationSectionProps {
   verificationStatus?: VerificationStatus;
@@ -9,7 +9,7 @@ interface VerificationSectionProps {
 }
 
 export default function VerificationSection({ verificationStatus, onSubmit }: VerificationSectionProps) {
-  const [isEditingVerification, setIsEditingVerification] = useState(true);
+  const [isEditingVerification, setIsEditingVerification] = useState(!verificationStatus);
   const [governmentId, setGovernmentId] = useState<File | null>(null);
   const [businessLicense, setBusinessLicense] = useState<File | null>(null);
   const [productSample, setProductSample] = useState<File | null>(null);

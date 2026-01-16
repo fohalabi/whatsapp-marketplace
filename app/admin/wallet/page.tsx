@@ -1,5 +1,5 @@
-import Wallet from "@/components/admin/finance/Wallet";
+import AdminWalletPage from "@/components/admin/finance/Wallet";
 
 export default function WalletPage() {
-    return <Wallet />;
+    return <AdminWalletPage />;
 }

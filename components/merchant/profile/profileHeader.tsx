@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, Clock } from 'lucide-react';
 
-type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+type VerificationStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 interface ProfileHeaderProps {
   verificationStatus?: VerificationStatus;
@@ -17,9 +17,17 @@ export default function ProfileHeader({ verificationStatus, hasSubmittedVerifica
         icon: CheckCircle
       };
     }
+    if (status === 'PENDING') {
+      return {
+        label: 'Pending Verification',
+        color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+        icon: Clock
+      };
+    }
+    // Add this for NOT_SUBMITTED
     return {
-      label: 'Pending Verification',
-      color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+      label: 'Not Submitted',
+      color: 'bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400',
       icon: Clock
     };
   };
@@ -38,7 +46,7 @@ export default function ProfileHeader({ verificationStatus, hasSubmittedVerifica
             Manage your account information
           </p>
         </div>
-        {hasSubmittedVerification && verificationConfig && (
+        {hasSubmittedVerification && verificationConfig && VerificationIcon && (
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full ${verificationConfig.color}`}>
             <VerificationIcon size={16} />
             {verificationConfig.label}

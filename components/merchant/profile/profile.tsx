@@ -10,7 +10,7 @@ import ContactDetailsSection from '@/components/merchant/profile/ContactDetailsS
 import VerificationSection from '@/components/merchant/profile/VerificationSection';
 import toast from 'react-hot-toast';
 
-type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+type VerificationStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 interface MerchantProfileData {
   businessName: string;
@@ -66,11 +66,11 @@ export default function MerchantProfilePage() {
         phone: realProfile?.phone || ''
       });
       fetchProfile();
-      toast.error('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
-      atoast.error(errorMessage);
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -89,7 +89,7 @@ export default function MerchantProfilePage() {
         phone
       });
       fetchProfile();
-      toast.error('Phone number updated successfully!');
+      toast.success('Phone number updated successfully!');
     } catch (error) {
       console.error('Error updating phone:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to update phone';
@@ -120,7 +120,7 @@ export default function MerchantProfilePage() {
 
     try {
       await profileService.submitMerchantVerification(formData);
-      toast.error('Verification submitted successfully');
+      toast.success('Verification submitted successfully');
       fetchProfile();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error submitting verification');
@@ -154,7 +154,7 @@ export default function MerchantProfilePage() {
         newPassword: passwordForm.newPassword
       });
 
-      toast.error('Password changed successfully!');
+      toast.success('Password changed successfully!');
       setShowPasswordModal(false);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error: any) {
@@ -164,7 +164,7 @@ export default function MerchantProfilePage() {
     }
   };
 
-  const hasSubmittedVerification = realProfile?.verificationStatus !== undefined !== null;
+  const hasSubmittedVerification = true;
 
   if (loading) {
     return (

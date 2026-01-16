@@ -105,7 +105,6 @@ const MerchantProducts = () => {
       // Redirect to profile page for verification
       toast.error('Please complete your verification first');
       window.location.href = '/merchant/profile';
-      // Or use Next.js router: router.push('/merchant/profile');
       return;
     }
 
@@ -195,7 +194,7 @@ const MerchantProducts = () => {
     
     try {
       await profileService.createProduct(submitData);
-      toast.error('Product submitted for review successfully!');
+      toast.success('Product submitted for review successfully!');
       handleCloseForm();
 
       // Refresh products list
@@ -524,6 +523,8 @@ const MerchantProducts = () => {
                             <Image
                               src={URL.createObjectURL(image)}
                               alt={`Preview ${index + 1}`}
+                              width={80}
+                              height={80}
                               className="w-full h-20 object-cover rounded-lg border border-gray-200"
                             />
                             <button
