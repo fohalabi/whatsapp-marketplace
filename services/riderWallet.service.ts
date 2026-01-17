@@ -20,4 +20,8 @@ export const riderWalletService = {
   }) => {
     return api.post('/rider/wallet/withdraw', { amount, bankDetails });
   },
+
+  getAllRiderWallets: async () => {
+    return api.get('/rider/wallet/all');
+  }
 };

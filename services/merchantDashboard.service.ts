@@ -1,4 +1,3 @@
-// @/services/dashboard.service.ts
 import api from '@/lib/api';
 import {
     ApiResponse,
@@ -6,7 +5,6 @@ import {
     SalesData,
     CategoryData,
     TopProduct,
-    HourlyPattern,
     CustomerMetric,
     DeliveryZone,
     TimeFrame
@@ -17,49 +15,58 @@ export const dashboardService = {
         timeFrame?: TimeFrame;
         limit?: number;
     }): Promise<ApiResponse<DashboardStats>> {
-        const response = await api.get('/merchantdashboard/all', { params });
+        const response = await api.get('/merchant/dashboard', { params });
         return response.data;
     },
 
-    async getMerchantStats(): Promise<ApiResponse> {
-        const response = await api.get('/merchantdashboard/stats');
+    async getMerchantStats(params?: {
+        timeFrame?: TimeFrame;
+    }): Promise<ApiResponse> {
+        const response = await api.get('/merchant/dashboard/stats', { params });
         return response.data;
     },
 
     async getSalesTrend(params?: {
         timeFrame?: TimeFrame;
     }): Promise<ApiResponse<SalesData[]>> {
-        const response = await api.get('/merchantdashboard/sales-trend', { params });
+        const response = await api.get('/merchant/dashboard/sales-trend', { params });
         return response.data;
     },
 
     async getCategoryPerformance(): Promise<ApiResponse<CategoryData[]>> {
-        const response = await api.get('/merchantdashboard/categories');
+        const response = await api.get('/merchant/dashboard/categories');
         return response.data;
     },
 
-    async getTopProducts(limit: number = 5): Promise<ApiResponse<TopProduct[]>> {
-        const response = await api.get(`/merchantdashboard/top-products?limit=${limit}`);
+    async getTopProducts(params?: {
+        timeFrame?: TimeFrame;
+        limit?: number;
+    }): Promise<ApiResponse<TopProduct[]>> {
+        const response = await api.get('/merchant/dashboard/top-products', { params });
         return response.data;
     },
 
-    async getHourlyPattern(): Promise<ApiResponse<HourlyPattern[]>> {
-        const response = await api.get('/merchantdashboard/hourly-pattern');
+    async getLowStockProducts(): Promise<ApiResponse> {
+        const response = await api.get('/merchant/dashboard/low-stock');
         return response.data;
     },
 
-    async getCustomerMetrics(): Promise<ApiResponse<CustomerMetric[]>> {
-        const response = await api.get('/merchantdashboard/customer-metrics');
+    async getCustomerMetrics(params?: {
+        timeFrame?: TimeFrame;
+    }): Promise<ApiResponse<CustomerMetric[]>> {
+        const response = await api.get('/merchant/dashboard/customer-metrics', { params });
         return response.data;
     },
 
-    async getDeliveryZonePerformance(): Promise<ApiResponse<DeliveryZone[]>> {
-        const response = await api.get('/merchantdashboard/delivery-zones');
+    async getDeliveryZonePerformance(params?: {
+        timeFrame?: TimeFrame;
+    }): Promise<ApiResponse<DeliveryZone[]>> {
+        const response = await api.get('/merchant/dashboard/delivery-zones', { params });
         return response.data;
     },
 
     async healthCheck(): Promise<ApiResponse> {
-        const response = await api.get('/merchantdashboard/health');
+        const response = await api.get('/merchant/dashboard/health');
         return response.data;
     },
 };

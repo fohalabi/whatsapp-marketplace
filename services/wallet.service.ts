@@ -87,7 +87,7 @@ class WalletService {
   }
 
   async getAllMerchantWallets(): Promise<MerchantWallet[]> {
-    const response = await api.get('/wallet/merchants');
+    const response = await api.get('/wallet/merchants/all');
     return response.data.data;
   }
 

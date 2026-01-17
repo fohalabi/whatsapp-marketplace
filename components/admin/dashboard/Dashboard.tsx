@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -27,9 +27,6 @@ import { motion } from 'framer-motion';
 import {
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -37,15 +34,7 @@ import {
   Legend,
   ResponsiveContainer,
   Area,
-  AreaChart,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ScatterChart,
-  Scatter,
-  ZAxis
+  AreaChart
 } from 'recharts';
 import toast from 'react-hot-toast';
 import { adminDashboardService, AdminDashboardData } from '@/services/adminDashboard.service';
@@ -72,7 +61,7 @@ const itemVariants = {
   }
 };
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, trend, trendValue, icon: Icon, delay }) => (
+const StatCard: React.FC<StatCardProps> = ({ label, value, trend, trendValue, icon: Icon }) => (
   <motion.div
     variants={itemVariants}
     className="bg-white rounded-lg border border-gray-200 p-6 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
@@ -291,7 +280,7 @@ const MerchantComparisonChart: React.FC<{ data: Array<{ name: string; orders: nu
   const router = useRouter();
   
   const handleViewAll = () => {
-    router.push('/admin/merchants');
+    router.push('/admin/all-merchants');
   };
 
   return (
@@ -506,7 +495,7 @@ const Dashboard: React.FC = () => {
     
     try {
       const backendTimeFrame = timeFilter === 'week' ? '7days' : timeFilter === 'month' ? '30days' : 'today';
-      const response = await adminDashboardService.getDashboardData({
+      const response = await adminDashboardService.getDashboard({
         timeFrame: backendTimeFrame as '7days' | ''
       })
       

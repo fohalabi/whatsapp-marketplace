@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Download, Eye, RefreshCw, Bike } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { riderWalletService } from '@/services/riderWallet.service';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-NG', {
@@ -48,9 +49,8 @@ export default function RiderWalletsTable({ onViewDetails }: RiderWalletsTablePr
     const fetchRiderWallets = async () => {
         setLoading(true);
         try {
-            // TODO: Add getAllRiderWallets() method to your walletService
-            const response = await fetch('/api/admin/riders/wallets');
-            const data = await response.json();
+            const response = await riderWalletService.getAllRiderWallets();
+            const data = response.data;
             
             if (data.success) {
             setWallets(data.data || []);
