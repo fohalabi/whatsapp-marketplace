@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, DollarSign, Package, X, Upload, Trash2, AlertTriangle } from 'lucide-react';
-import Image from 'next/image';
 import { profileService } from '@/services/profile.service';
 import toast from 'react-hot-toast';
 
@@ -18,17 +17,18 @@ type Product = {
   minOrderQty: number;
   description: string;
   images: string[];
-  variants: any;
+  variants?: Array<{ type: string; value: string }>;
 };
 
 const categories = ['Vegetables', 'Proteins', 'Grains & Cereals', 'Oils & Condiments', 'Spices', 'Beverages', 'Snacks'];
 
 const MerchantProducts = () => {
+  console.log('COMPONENT RENDERING...')
   const [showForm, setShowForm] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [profile, setProfile] = useState<{ verificationStatus: string; businessName: string } | null>(null);
   const [productImages, setProductImages] = useState<File[]>([]);
   
   const [formData, setFormData] = useState({
@@ -44,23 +44,44 @@ const MerchantProducts = () => {
 
   // Check verification status when component loads
   useEffect(() => {
-    const fetchData = async () => {
+    let isMounted = true;
+
+   const fetchData = async () => {
+      console.log('🔵 Starting fetch...');
       try {
+        console.log('🔵 Fetching profile and products...');
         const [profileResponse, productsResponse] = await Promise.all([
           profileService.getMerchantProfile(),
           profileService.getMerchantProducts()
         ]);
         
-        setProfile(profileResponse.data);
-        setProducts(productsResponse.data || []);
+        console.log('✅ Profile response:', profileResponse);
+        console.log('✅ Products response:', productsResponse);
+        
+        if (isMounted) {
+          setProfile(profileResponse.data);
+          setProducts(productsResponse.data || []);
+          console.log('✅ State updated');
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('❌ Fetch error:', error);
+        if (isMounted) {
+          setProducts([]);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          console.log('✅ Loading set to false');
+        }
       }
     };
     
     fetchData();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const isVerified = profile?.verificationStatus === 'VERIFIED';
@@ -185,7 +206,7 @@ const MerchantProducts = () => {
     submitData.append('minOrderQty', formData.minOrderQty);
     
     // Add images
-    productImages.forEach((image, index) => {
+    productImages.forEach((image) => {
       submitData.append(`images`, image);
     });
     
@@ -245,13 +266,16 @@ const MerchantProducts = () => {
     return `${diffDays} days ago`;
   };
 
+  if (loading) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <p className='text-gray-600'>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gray-50">
-      {loading ? (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    ) : (
         <div className="max-w-7xl mx-auto">
           {/* Verification Warning Banner */}
           {!isVerified && (
@@ -348,7 +372,7 @@ const MerchantProducts = () => {
               <div className="p-8 text-center">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-600 mb-2">No products yet</p>
-                <p className="text-sm text-gray-500">Click "Add Product" to create your first product</p>
+                <p className="text-sm text-gray-500">Click &quot;Add Product&quot; to create your first product</p>
               </div>
             )}
           </div>
@@ -519,12 +543,10 @@ const MerchantProducts = () => {
                     {productImages.length > 0 && (
                       <div className="mt-4 grid grid-cols-3 sm:grid-cols-5 gap-3">
                         {productImages.map((image, index) => (
-                          <div key={index} className="relative group">
-                            <Image
+                          <div key={`${image.name}-${index}`} className="relative group">
+                            <img
                               src={URL.createObjectURL(image)}
                               alt={`Preview ${index + 1}`}
-                              width={80}
-                              height={80}
                               className="w-full h-20 object-cover rounded-lg border border-gray-200"
                             />
                             <button
@@ -607,7 +629,6 @@ const MerchantProducts = () => {
             </div>
           )}
         </div>
-    )}
     </div>
   );
 };

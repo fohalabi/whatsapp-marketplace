@@ -62,6 +62,15 @@ export default function RiderDashboard() {
   const [riderLocation, setRiderLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log('Token exists:', !!token);
+
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('Token payload:', payload);
+      console.log('User role:', payload);
+    }
+    
     fetchData();
 
     // Get rider's live location
@@ -94,6 +103,7 @@ export default function RiderDashboard() {
 
   const fetchData = async () => {
     try {
+      console.log('Token:', localStorage.getItem('token'));
       const [profileRes, deliveriesRes] = await Promise.all([
         riderService.getProfile(),
         riderService.getMyDeliveries(),
