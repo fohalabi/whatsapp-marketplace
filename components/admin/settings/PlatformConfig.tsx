@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, DollarSign, AlertCircle, CheckCircle, Save } from 'lucide-react';
 import { DeliveryZone, ConfigData } from '@/Types/types';
-
+import { adminPlatformConfigService } from '@/services/adminPlatformConfig.service';
 const SettingsSection = ({ 
   title, 
   icon: Icon, 
@@ -29,6 +29,113 @@ const SettingsSection = ({
 export default function PlatformConfigPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const fetchConfig = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const result = await adminPlatformConfigService.getPlatformConfig();
+      
+      if (result.success && result.data) {
+        // Map backend data to frontend state
+        setConfig({
+          businessHours: {
+            enabled: result.data.businessHoursEnabled,
+            openTime: result.data.openTime,
+            closeTime: result.data.closeTime,
+          },
+          deliveryZones: [
+            { 
+              id: 'zone-1', 
+              name: 'Mainland to Island', 
+              rate: result.data.mainlandToIsland, 
+              enabled: true 
+            },
+            { 
+              id: 'zone-2', 
+              name: 'Island to Mainland', 
+              rate: result.data.islandToMainland, 
+              enabled: true 
+            },
+            { 
+              id: 'zone-3', 
+              name: 'Mainland to Mainland', 
+              rate: result.data.mainlandToMainland, 
+              enabled: true 
+            },
+            { 
+              id: 'zone-4', 
+              name: 'Island to Island', 
+              rate: result.data.islandToIsland, 
+              enabled: true 
+            },
+          ],
+          defaultDeliveryFee: result.data.defaultDeliveryFee,
+          orderCutoff: {
+            enabled: result.data.orderCutoffEnabled,
+            time: result.data.orderCutoffTime,
+          },
+          autoConfirmOrders: result.data.autoConfirmOrders,
+          allowWeekendDelivery: result.data.allowWeekendDelivery,
+        });
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      console.error('Error fetching config:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update the handleSaveChanges function:
+  const handleSaveChanges = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Map frontend state to backend format
+      const payload = {
+        businessHoursEnabled: config.businessHours.enabled,
+        openTime: config.businessHours.openTime,
+        closeTime: config.businessHours.closeTime,
+        mainlandToIsland: config.deliveryZones[0].rate,
+        islandToMainland: config.deliveryZones[1].rate,
+        mainlandToMainland: config.deliveryZones[2].rate,
+        islandToIsland: config.deliveryZones[3].rate,
+        defaultDeliveryFee: config.defaultDeliveryFee,
+        orderCutoffEnabled: config.orderCutoff.enabled,
+        orderCutoffTime: config.orderCutoff.time,
+        autoConfirmOrders: config.autoConfirmOrders,
+        allowWeekendDelivery: config.allowWeekendDelivery,
+      };
+
+      const result = await adminPlatformConfigService.updatePlatformConfig(payload);
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to save configuration');
+      }
+
+      setShowSuccess(true);
+      setHasChanges(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+      
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      console.error('Error saving config:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
   
   const [config, setConfig] = useState<ConfigData>({
     businessHours: {
@@ -51,12 +158,6 @@ export default function PlatformConfigPage() {
     allowWeekendDelivery: true,
   });
 
-  const handleSaveChanges = () => {
-    setShowSuccess(true);
-    setHasChanges(false);
-    setTimeout(() => setShowSuccess(false), 3000);
-  };
-
   const updateConfig = (updates: Partial<ConfigData>) => {
     setConfig({ ...config, ...updates });
     setHasChanges(true);
@@ -69,6 +170,17 @@ export default function PlatformConfigPage() {
     updateConfig({ deliveryZones: updatedZones });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto p-8">
@@ -80,13 +192,21 @@ export default function PlatformConfigPage() {
           </div>
           <button
             onClick={handleSaveChanges}
-            disabled={!hasChanges}
+            disabled={!hasChanges || saving}
             className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
             <Save className="w-5 h-5" />
-            Save Changes
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
+
+        {/* Error display */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+            <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+            <p className="text-sm font-medium text-red-800">{error}</p>
+          </div>
+        )}
 
         {/* Success Message */}
         {showSuccess && (
