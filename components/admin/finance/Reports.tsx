@@ -58,12 +58,6 @@ export default function ReportsPage() {
       
       setMerchantData(filtered);
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        toast.error('Acess denied');
-        router.push('/admin/dashboard');
-      } else {
-        toast.error('Failed to load Reports');
-      } 
       console.error('Failed to fetch report:', error);
     } finally {
       setLoading(false);
@@ -190,8 +184,8 @@ export default function ReportsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">All Merchants</option>
-                    {merchantData.map((m) => (
-                      <option key={m.merchant} value={m.merchant}>
+                    {merchantData.map((m, idx) => (
+                      <option key={`${m.merchant}-${idx}`} value={m.merchant}>
                         {m.merchant}
                       </option>
                     ))}
@@ -298,7 +292,7 @@ export default function ReportsPage() {
                       monthly: summaryData.ordersCount
                     },
                   ].map((row, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                    <tr key={row.metric} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {row.metric}
                       </td>
@@ -360,7 +354,7 @@ export default function ReportsPage() {
                       </tr>
                     ) : (
                       merchantData.map((merchant, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
+                        <tr key={`${merchant.merchantName}-${index}`} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {merchant.merchantName}
                           </td>

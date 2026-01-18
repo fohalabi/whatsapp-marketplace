@@ -5,7 +5,6 @@ import { UserPlus, Edit, UserX, Shield, Users, CheckCircle } from 'lucide-react'
 import { TeamMember, RolePermissions } from '@/Types/types';
 import { profileService } from '@/services/profile.service';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
 
 const StatusBadge = ({ 
   status, 
@@ -65,8 +64,6 @@ export default function TeamRolesPage() {
     role: 'SUPPORT' as TeamMember['role'],
   });
 
-  const router = useRouter();
-
   const fetchTeamData = async () => {
     try {
       setLoading(true);
@@ -78,12 +75,6 @@ export default function TeamRolesPage() {
       setTeamMembers(membersRes.data);
       setRolePermissions(permissionsRes.data);
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        toast.error('Access denied');
-        router.push('/admin/dashboard');
-      } else {
-        toast.error('Failed to load team');
-      }
       console.error('Failed to fetch team:', error);
     } finally {
       setLoading(false);

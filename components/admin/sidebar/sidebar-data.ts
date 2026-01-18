@@ -22,7 +22,7 @@ export const sidebarData: SidebarSection[] = [
     icon: Store,
     items: [
       { id: 'admin/all-merchants', label: 'All Merchants' },
-      { id: 'admin/onboarding', label: 'Onboarding', badge: 3 },
+      { id: 'admin/onboarding', label: 'Onboarding' },
       { id: 'admin/payouts', label: 'Payouts' },
     ],
   },
@@ -32,16 +32,16 @@ export const sidebarData: SidebarSection[] = [
     items: [
       { id: 'admin/products', label: 'Products' },
       { id: 'admin/pricing-manager', label: 'Pricing Manager' },
-      { id: 'admin/stock-sync', label: 'Stock Sync', badge: 3 },
+      { id: 'admin/stock-sync', label: 'Stock Sync' },
     ],
   },
   {
     section: 'Orders',
     icon: Truck,
     items: [
-      { id: 'admin/active-orders', label: 'Active Orders', badge: 8 },
+      { id: 'admin/active-orders', label: 'Active Orders' },
       { id: 'admin/fulfillment', label: 'Fulfillment' },
-      { id: 'admin/returns', label: 'Returns', badge: 7 },
+      { id: 'admin/returns', label: 'Returns' },
       { id: 'admin/deliveries', label: 'Deliveries' },
       { id: 'admin/riders', label: 'Riders' },
     ],
@@ -60,7 +60,6 @@ export const sidebarData: SidebarSection[] = [
     icon: DollarSign,
     items: [
       { id: 'admin/escrow', label: 'Escrow' },
-      { id: 'admin/settlements', label: 'Settlements' },
       { id: 'admin/reports', label: 'Reports' },
       { id: 'admin/wallet', label: 'Wallet' },
     ],

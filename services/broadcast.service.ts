@@ -242,7 +242,6 @@ export interface SegmentsAnalyticsResponse {
 }
 
 export const broadcastService = {
-  // ========== TEMPLATE MANAGEMENT ==========
 
   async createTemplate(data: CreateTemplateDTO): Promise<CreateTemplateResponse> {
     const response = await api.post('/admin/broadcast/templates', data);
