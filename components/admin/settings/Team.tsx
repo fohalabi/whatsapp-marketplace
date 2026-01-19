@@ -96,7 +96,7 @@ export default function TeamRolesPage() {
       await fetchTeamData(); // Refresh the list
       setShowInviteModal(false);
       setInviteForm({ name: '', email: '', role: 'Support' });
-      toast.error('Team member invited successfully! They will receive an email.');
+      toast.success('Team member invited successfully! They will receive an email.');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to invite team member');
     }
@@ -115,7 +115,7 @@ export default function TeamRolesPage() {
       await fetchTeamData(); // Refresh the list
       setShowEditModal(false);
       setSelectedMember(null);
-      toast.error('Role updated successfully!');
+      toast.success('Role updated successfully!');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to update role');
     }
@@ -125,7 +125,7 @@ export default function TeamRolesPage() {
     try {
       await profileService.toggleMemberStatus(memberId);
       await fetchTeamData(); // Refresh the list
-      toast.error('Status updated successfully!');
+      toast.success('Status updated successfully!');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to update status');
     }

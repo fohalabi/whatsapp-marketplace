@@ -18,17 +18,17 @@ api.interceptors.request.use((config) => {
 });
 
 // Handle 403 errors globally
-// api.interceptors.response.use(
-//     (response) => response,
-//     (error) => {
-//         if (error.response?.status === 403) {
-//             toast.error('Access denied. Redirecting to dashboard...');
-//             setTimeout(() => {
-//                 window.location.href = '/admin/dashboard';
-//             }, 1500);
-//         }
-//         return Promise.reject(error);
-//     }
-// );
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 403) {
+            toast.error('Access denied. Redirecting to dashboard...');
+            setTimeout(() => {
+                window.location.href = '/admin/dashboard';
+            }, 1500);
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default api;

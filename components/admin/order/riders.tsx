@@ -25,6 +25,7 @@ interface Rider {
 
 export default function AdminRidersPage() {
   const [riders, setRiders] = useState<Rider[]>([]);
+  const [allRiders, setAllRiders] = useState<Rider[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('PENDING');
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -40,6 +41,9 @@ export default function AdminRidersPage() {
       const status = selectedStatus === 'ALL' ? undefined : selectedStatus;
       const response = await riderApprovalService.getAllRiders(status);
       setRiders(response.data.data);
+
+      const allResponse = await riderApprovalService.getAllRiders(undefined);
+      setAllRiders(allResponse.data.data);
     } catch (error) {
       console.error('Failed to fetch riders:', error);
       toast.error('Failed to load riders');
@@ -50,10 +54,14 @@ export default function AdminRidersPage() {
 
   const handleApprove = async (riderId: string) => {
     try {
-      await riderApprovalService.approveRider(riderId);
+      console.log('Attempting to approve rider:', riderId);
+      const response = await riderApprovalService.approveRider(riderId);
+      console.log('Approval response:', response);
       toast.success('Rider approved successfully');
       fetchRiders();
     } catch (error: any) {
+      console.error('Approval error details:', error);
+      console.error('Error response:', error.response)
       toast.error(error.response?.data?.message || 'Failed to approve rider');
     }
   };
@@ -138,7 +146,7 @@ export default function AdminRidersPage() {
             <div>
               <p className="text-sm text-gray-600">Pending</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {riders.filter(r => r.approvalStatus === 'PENDING').length}
+                {allRiders.filter(r => r.approvalStatus === 'PENDING').length}
               </p>
             </div>
             <UserCheck className="w-8 h-8 text-yellow-600" />
@@ -149,7 +157,7 @@ export default function AdminRidersPage() {
             <div>
               <p className="text-sm text-gray-600">Approved</p>
               <p className="text-2xl font-bold text-green-600">
-                {riders.filter(r => r.approvalStatus === 'APPROVED').length}
+                {allRiders.filter(r => r.approvalStatus === 'APPROVED').length}
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -160,7 +168,7 @@ export default function AdminRidersPage() {
             <div>
               <p className="text-sm text-gray-600">Rejected</p>
               <p className="text-2xl font-bold text-red-600">
-                {riders.filter(r => r.approvalStatus === 'REJECTED').length}
+                {allRiders.filter(r => r.approvalStatus === 'REJECTED').length}
               </p>
             </div>
             <XCircle className="w-8 h-8 text-red-600" />
